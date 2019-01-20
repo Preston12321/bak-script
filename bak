@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# TODO: Add help option
+
+# Flags
+REMOVE_FLAG="-r"
+FORCE_FLAG="-f"
+
+# Destination path for backup file(s)
+DEST_PATH="."
+
+# Extension to add to backup file(s)
+BAK_EXT="bak"
+
+# Should we remove original file(s)?
+REMOVE=false
+
+# Should we overwrite pre-existing backup file(s)?
+FORCE=false
+
+# Print verbose debugging info?
+DEBUG=false
+
+flags_set=0
+
+# Parse options
+while getopts ":rfd:x:v" opt; do
+  case $opt in
+    r) # REMOVE_FLAG
+      echo "Remove flag set"
+      REMOVE=true
+      flags_set=$((flags_set+1))
+      ;;
+    f) # FORCE_FLAG
+      echo "Force flag set"
+      FORCE=true
+      flags_set=$((flags_set+1))
+      ;;
+    d) # DEST_PATH
+      echo "Destination set to $OPTARG"
+      DEST_PATH="$OPTARG"
+      flags_set=$((flags_set+2))
+      ;;
+    x) # BAK_EXT
+      echo "Extension set to $OPTARG"
+      BAK_EXT="$OPTARG"
+      flags_set=$((flags_set+2))
+      ;;
+    v)
+      echo "Verbose flag set"
+      DEBUG=true
+      flags_set=$((flags_set+2))
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [ "$DEBUG" == "true" ]; then; echo "$@"; fi
+
+# TODO: Make sure this works with argument flags
+if [ "$#" == "$flags_set" ]; then
+    echo "Error: No files specified." >&2
+    exit 1
+fi
+
+for arg in "$@"; do
+    # TODO: Add new flags checks
+    # Skip any flags
+    if [[ "$arg" == "$REMOVE_FLAG" ]] || [[ "$arg" == "$FORCE_FLAG" ]]; then
+        continue
+    fi
+
+    # Copy the file '$arg' into '$arg.$BAK_EXT'
+    if [ ! -f "$arg.$BAK_EXT" ]; then
+        # Backup file doesn't exist. Make backup.
+        cp "$arg" "$DEST_PATH/$arg.$BAK_EXT"
+    else
+        # Backup file exists
+        if [ "$FORCE" == "true" ]; then
+            # Force flag set. Make backup
+            cp "$arg" "$arg.$BAK_EXT"
+        else
+            # Force flag not set. Print error message.
+            echo "Failed to create $arg.$BAK_EXT: file already exists. Run with -f to create anyway."
+        fi
+    fi
+
+    if [ "$REMOVE" == "true" ]; then
+        rm -f "$arg"
+    fi
+done
