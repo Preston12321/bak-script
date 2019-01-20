@@ -62,7 +62,7 @@ while getopts ":rfd:x:v" opt; do
   esac
 done
 
-if [ "$DEBUG" == "true" ]; then; echo "$@"; fi
+if [ "$DEBUG" == "true" ]; then echo "$@"; fi
 
 # TODO: Make sure this works with argument flags
 if [ "$#" == "$flags_set" ]; then
